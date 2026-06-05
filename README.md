@@ -1,6 +1,6 @@
 # AI Brief Generator — Collabstr Take-Home
 
-A minimal, production-minded Django app that generates influencer campaign briefs using GPT-4o mini.
+A minimal, production-minded Django app that generates influencer campaign briefs using Claude Haiku 4.5 (Anthropic).
 
 ## Live Demo
 
@@ -15,7 +15,7 @@ git clone https://github.com/YOUR_USERNAME/collabstr-brief
 cd collabstr-brief
 python -m venv venv && source venv/bin/activate
 pip install -r requirements.txt
-cp .env.example .env   # add your OPENAI_API_KEY
+cp .env.example .env   # add your ANTHROPIC_API_KEY
 python manage.py runserver
 ```
 
