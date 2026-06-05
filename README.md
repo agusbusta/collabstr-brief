@@ -2,7 +2,7 @@
 
 A Django app that takes four campaign inputs and returns a production-ready brief, content angles, and creator criteria — all structured via Claude's tool-use API.
 
-**Live demo:** https://your-url.up.railway.app
+**Live demo:** https://collabstr-brief.onrender.com
 
 ---
 
