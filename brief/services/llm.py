@@ -9,6 +9,8 @@ from django.conf import settings
 
 logger = logging.getLogger(__name__)
 
+# Haiku is fast enough for a form submit UX and cheaper than Sonnet.
+# Swap to claude-sonnet-4-6 if output quality needs a bump.
 MODEL = "claude-haiku-4-5-20251001"
 
 SYSTEM_PROMPT = """You are a senior influencer marketing strategist at a top creator economy agency.

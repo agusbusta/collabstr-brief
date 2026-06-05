@@ -16,8 +16,8 @@ VALID_GOALS = {"Awareness", "Conversions", "Content Assets"}
 VALID_TONES = {"Professional", "Friendly", "Playful"}
 
 RATE_LIMIT_KEY = "brief_rate_{ip}"
-RATE_LIMIT_MAX = 10
-RATE_LIMIT_TTL = 60  # seconds
+RATE_LIMIT_MAX = 10   # per window
+RATE_LIMIT_TTL = 60   # seconds — enough to prevent abuse without blocking legit users
 
 
 def index(request):
