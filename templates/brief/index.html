@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI Brief Generator — Collabstr</title>
+  {% load static %}
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="{% static 'css/main.css' %}" />
+</head>
+<body>
+
+  <!-- Nav -->
+  <header class="nav">
+    <div class="nav-inner">
+      <div class="nav-logo">
+        <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect width="28" height="28" rx="8" fill="#6C5CE7"/>
+          <path d="M7 14C7 10.134 10.134 7 14 7C17.866 7 21 10.134 21 14" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+          <circle cx="14" cy="19" r="3" fill="white"/>
+        </svg>
+        <span class="nav-brand">Collabstr</span>
+        <span class="nav-badge">AI</span>
+      </div>
+      <nav class="nav-links">
+        <a href="#">Campaigns</a>
+        <a href="#">Creators</a>
+        <a href="#" class="btn btn-sm btn-primary">Sign up</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="hero-inner">
+      <div class="hero-pill">
+        <span class="pill-dot"></span>
+        Powered by GPT-4o mini
+      </div>
+      <h1 class="hero-title">AI Campaign<br /><span class="gradient-text">Brief Generator</span></h1>
+      <p class="hero-subtitle">
+        Turn four inputs into a production-ready campaign brief in seconds — complete with content angles and creator selection criteria.
+      </p>
+    </div>
+  </section>
+
+  <!-- Main -->
+  <main class="main">
+    <div class="layout">
+
+      <!-- Form card -->
+      <div class="card form-card">
+        <div class="card-header">
+          <h2 class="card-title">Campaign details</h2>
+          <p class="card-subtitle">Fill in the fields below to generate your brief.</p>
+        </div>
+
+        <form id="brief-form" novalidate>
+          {% csrf_token %}
+
+          <div class="field">
+            <label class="label" for="brand">Brand name</label>
+            <input
+              class="input"
+              type="text"
+              id="brand"
+              name="brand"
+              placeholder="e.g. Gymshark"
+              maxlength="100"
+              autocomplete="off"
+              required
+            />
+          </div>
+
+          <div class="field-row">
+            <div class="field">
+              <label class="label" for="platform">Platform</label>
+              <div class="select-wrap">
+                <select class="input select" id="platform" name="platform" required>
+                  <option value="" disabled selected>Select platform</option>
+                  <option value="Instagram">Instagram</option>
+                  <option value="TikTok">TikTok</option>
+                  <option value="UGC">UGC</option>
+                </select>
+                <span class="select-arrow">
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 6l4 4 4-4" stroke="#9B8FD8" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </span>
+              </div>
+            </div>
+
+            <div class="field">
+              <label class="label" for="goal">Goal</label>
+              <div class="select-wrap">
+                <select class="input select" id="goal" name="goal" required>
+                  <option value="" disabled selected>Select goal</option>
+                  <option value="Awareness">Awareness</option>
+                  <option value="Conversions">Conversions</option>
+                  <option value="Content Assets">Content Assets</option>
+                </select>
+                <span class="select-arrow">
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 6l4 4 4-4" stroke="#9B8FD8" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div class="field">
+            <label class="label">Tone</label>
+            <div class="tone-pills" id="tone-group">
+              <label class="tone-pill">
+                <input type="radio" name="tone" value="Professional" />
+                <span>Professional</span>
+              </label>
+              <label class="tone-pill">
+                <input type="radio" name="tone" value="Friendly" />
+                <span>Friendly</span>
+              </label>
+              <label class="tone-pill">
+                <input type="radio" name="tone" value="Playful" />
+                <span>Playful</span>
+              </label>
+            </div>
+          </div>
+
+          <div id="form-error" class="error-banner" style="display:none;"></div>
+
+          <button class="btn btn-primary btn-full" type="submit" id="submit-btn">
+            <span class="btn-label">Generate brief</span>
+            <span class="btn-spinner" style="display:none;">
+              <svg class="spinner-icon" width="18" height="18" viewBox="0 0 18 18" fill="none">
+                <circle cx="9" cy="9" r="7" stroke="rgba(255,255,255,0.35)" stroke-width="2"/>
+                <path d="M16 9A7 7 0 0 0 9 2" stroke="white" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+              Generating…
+            </span>
+          </button>
+        </form>
+      </div>
+
+      <!-- Result card -->
+      <div class="card result-card" id="result-card" style="display:none;">
+        <div class="card-header result-header">
+          <div>
+            <h2 class="card-title">Campaign brief</h2>
+            <p class="card-subtitle" id="result-meta"></p>
+          </div>
+          <button class="btn btn-sm btn-ghost" id="copy-btn" title="Copy to clipboard">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="5" y="5" width="9" height="9" rx="1.5" stroke="currentColor" stroke-width="1.5"/><path d="M3 11V3.5A1.5 1.5 0 0 1 4.5 2H11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+            Copy
+          </button>
+        </div>
+
+        <div class="result-section">
+          <div class="result-label">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M1 7h12M7 1v12" stroke="#6C5CE7" stroke-width="1.5" stroke-linecap="round"/></svg>
+            Brief
+          </div>
+          <p class="result-brief" id="result-brief"></p>
+        </div>
+
+        <div class="result-divider"></div>
+
+        <div class="result-section">
+          <div class="result-label">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6" stroke="#6C5CE7" stroke-width="1.5"/><path d="M7 4v3l2 2" stroke="#6C5CE7" stroke-width="1.5" stroke-linecap="round"/></svg>
+            Content angles
+          </div>
+          <ol class="result-angles" id="result-angles"></ol>
+        </div>
+
+        <div class="result-divider"></div>
+
+        <div class="result-section">
+          <div class="result-label">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7l3.5 3.5L12 3" stroke="#6C5CE7" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Creator criteria
+          </div>
+          <ul class="result-criteria" id="result-criteria"></ul>
+        </div>
+
+        <div class="result-divider"></div>
+
+        <div class="result-telemetry" id="result-telemetry"></div>
+      </div>
+
+      <!-- Skeleton loader -->
+      <div class="card skeleton-card" id="skeleton-card" style="display:none;">
+        <div class="skeleton skeleton-title"></div>
+        <div class="skeleton skeleton-line"></div>
+        <div class="skeleton skeleton-line w-80"></div>
+        <div class="skeleton skeleton-line w-60"></div>
+        <div class="skeleton-spacer"></div>
+        <div class="skeleton skeleton-line w-40"></div>
+        <div class="skeleton skeleton-line"></div>
+        <div class="skeleton skeleton-line w-70"></div>
+        <div class="skeleton skeleton-line w-55"></div>
+      </div>
+
+    </div>
+  </main>
+
+  <footer class="footer">
+    <p>Built for Collabstr · AI Brief Generator · 2026</p>
+  </footer>
+
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <script src="{% static 'js/main.js' %}"></script>
+</body>
+</html>
