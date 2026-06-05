@@ -79,6 +79,7 @@ $(function () {
     $('#result-meta').text(brand + ' · ' + platform + ' · ' + goal);
 
     $result.show();
+    $('.layout').addClass('has-result');
   }
 
   function chip(label, value) {
