@@ -1,17 +1,17 @@
 """LLM orchestration: prompt design, structured output, and telemetry."""
 
 import time
+import json
 import logging
 from dataclasses import dataclass
 
-import anthropic
+from groq import Groq
 from django.conf import settings
 
 logger = logging.getLogger(__name__)
 
-# Haiku is fast enough for a form submit UX and cheaper than Sonnet.
-# Swap to claude-sonnet-4-6 if output quality needs a bump.
-MODEL = "claude-haiku-4-5-20251001"
+# Fast and capable; swap to llama-3.3-70b-versatile for heavier tasks
+MODEL = "llama-3.1-8b-instant"
 
 SYSTEM_PROMPT = """You are a senior influencer marketing strategist at a top creator economy agency.
 You write precise, actionable campaign briefs. Your tone matches the brand's requested tone exactly.
@@ -19,27 +19,30 @@ Output must be concise, specific to the platform, and immediately usable by a cr
 Never use generic filler phrases. Every sentence must add tactical value."""
 
 BRIEF_TOOL = {
-    "name": "campaign_brief",
-    "description": "Return a structured influencer campaign brief",
-    "input_schema": {
-        "type": "object",
-        "properties": {
-            "brief": {
-                "type": "string",
-                "description": "4-6 sentence campaign brief tailored to the inputs",
+    "type": "function",
+    "function": {
+        "name": "campaign_brief",
+        "description": "Return a structured influencer campaign brief",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "brief": {
+                    "type": "string",
+                    "description": "4-6 sentence campaign brief tailored to the inputs",
+                },
+                "angles": {
+                    "type": "array",
+                    "items": {"type": "string"},
+                    "description": "Exactly 3 content angle suggestions",
+                },
+                "criteria": {
+                    "type": "array",
+                    "items": {"type": "string"},
+                    "description": "Exactly 3 creator selection criteria bullets",
+                },
             },
-            "angles": {
-                "type": "array",
-                "items": {"type": "string"},
-                "description": "Exactly 3 content angle suggestions",
-            },
-            "criteria": {
-                "type": "array",
-                "items": {"type": "string"},
-                "description": "Exactly 3 creator selection criteria bullets",
-            },
+            "required": ["brief", "angles", "criteria"],
         },
-        "required": ["brief", "angles", "criteria"],
     },
 }
 
@@ -66,27 +69,29 @@ def build_user_prompt(brand: str, platform: str, goal: str, tone: str) -> str:
 
 
 def generate_brief(brand: str, platform: str, goal: str, tone: str) -> BriefResult:
-    client = anthropic.Anthropic(api_key=settings.ANTHROPIC_API_KEY)
+    client = Groq(api_key=settings.GROQ_API_KEY)
     user_prompt = build_user_prompt(brand, platform, goal, tone)
 
     start = time.perf_counter()
-    response = client.messages.create(
+    response = client.chat.completions.create(
         model=MODEL,
-        max_tokens=600,
-        temperature=0.4,
-        system=SYSTEM_PROMPT,
+        messages=[
+            {"role": "system", "content": SYSTEM_PROMPT},
+            {"role": "user", "content": user_prompt},
+        ],
         tools=[BRIEF_TOOL],
-        tool_choice={"type": "tool", "name": "campaign_brief"},
-        messages=[{"role": "user", "content": user_prompt}],
+        tool_choice={"type": "function", "function": {"name": "campaign_brief"}},
+        temperature=0.4,
+        max_tokens=600,
     )
     latency_ms = int((time.perf_counter() - start) * 1000)
 
-    tool_block = next(b for b in response.content if b.type == "tool_use")
-    data = tool_block.input
+    tool_call = response.choices[0].message.tool_calls[0]
+    data = json.loads(tool_call.function.arguments)
 
     usage = response.usage
-    prompt_tokens = usage.input_tokens
-    completion_tokens = usage.output_tokens
+    prompt_tokens = usage.prompt_tokens
+    completion_tokens = usage.completion_tokens
     return BriefResult(
         brief=data["brief"],
         angles=data["angles"],

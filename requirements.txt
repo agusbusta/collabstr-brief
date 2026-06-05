@@ -1,5 +1,5 @@
 django==4.2.30
-anthropic>=0.40.0
+groq>=0.9.0
 better-profanity==0.7.0
 python-dotenv==1.0.0
 gunicorn==21.2.0
